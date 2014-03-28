@@ -15,13 +15,13 @@ up your own URL patterns for these views instead.
 from django.conf.urls.defaults import *
 from django.views.generic.simple import direct_to_template
 
-from registration.views import activate
-from registration.views import register
+#from registration.views import ActivationView
+from registration.views import RegistrationView
 
 
 urlpatterns = patterns('',                                                                                            
                        url(r'^register/$',
-                           register,
+                           RegistrationView.as_view(),
                            {'backend': 'invite_registration.backends.invite_only.InviteOnlyBackend'},
                            name='registration_register'),                       
                        url(r'^register/closed/$',
