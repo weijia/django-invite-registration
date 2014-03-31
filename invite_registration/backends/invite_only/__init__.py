@@ -8,10 +8,12 @@ from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
 from registration import signals
 from registration.models import RegistrationProfile
+from registration.views import RegistrationView
 from invite_registration.forms import RegistrationFormInvitation as RegistrationForm
 from invite_registration.models import Invitation, InvitationUse
 
-class InviteOnlyBackend(object):
+
+class InviteOnlyBackend(RegistrationView):
     """
     A registration backend which follows an invitation workflow:
 
@@ -76,6 +78,16 @@ class InviteOnlyBackend(object):
           ``False``, registration is not permitted.        
         """
         return getattr(settings, 'REGISTRATION_OPEN', True)
+
+    def get_form_kwargs(self, request=None, form_class=None):
+        kwargs = super(InviteOnlyBackend, self).get_form_kwargs(request, form_class)
+        if (self.request.method in ('GET')) and (0!=len(self.request.GET)):
+            kwargs.update({
+                'data': self.request.GET,
+                'files': self.request.FILES,
+            })
+        return kwargs
+
 
     def get_form_class(self, request):
         """
