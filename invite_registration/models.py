@@ -47,7 +47,11 @@ class Invitation(models.Model):
     
     def save(self,*args, **kwargs):
         if not self.id:
-            self.code = ''.join(random.sample(DEFAULT_ALPHABET, 6)) 
+            self.code = ''.join(random.sample(DEFAULT_ALPHABET, 6))
+            try:
+                invitation_use = self.user.invitation_use
+            except:
+                invitation_use = InvitationUse.objects.get_or_create(user=self.user)
             self.user.invitation_use.add_sent()
         super(Invitation, self).save(*args, **kwargs)
     
@@ -72,11 +76,11 @@ class Invitation(models.Model):
         elif request is not None:
             site = RequestSite(request)
         invitation_context = {'invitation': self, 'site': site}
-        subject = render_to_string('iinvite_registration/invitation_email_subject.txt',
+        subject = render_to_string('invite_registration/invitation_email_subject.txt',
                                    invitation_context)
         # Email subject *must not* contain newlines
         subject = ''.join(subject.splitlines())
-        message = render_to_string('iinvite_registration/invitation_email.txt', 
+        message = render_to_string('invite_registration/invitation_email.txt',
                                    invitation_context)
         send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [self.email])
         signals.invitation_sent.send(sender=self)    

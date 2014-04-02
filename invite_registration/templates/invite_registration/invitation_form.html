@@ -4,6 +4,9 @@
 {% block container %}
 
 <h2>{% trans "Invite a friend" %}</h2>
+{% ifequal invitation_sent 1 %}
+<p>{% trans "invitation sent. Your friend will receive the invitation soon." %}</p>
+{% endifequal %}
 
 {% ifequal remaining_invitations 0 %}
 <p>{% trans "You currently have no invitations to send." %}</p>

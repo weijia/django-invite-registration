@@ -6,12 +6,15 @@ from django.contrib.auth import login
 from django.contrib.sites.models import RequestSite
 from django.contrib.sites.models import Site
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from registration import signals
 from registration.models import RegistrationProfile
+from registration.views import RegistrationView
 from invite_registration.forms import RegistrationFormInvitation as RegistrationForm
 from invite_registration.models import Invitation, InvitationUse
 
-class InviteOnlyBackend(object):
+
+class InviteOnlyBackend(RegistrationView):
     """
     A registration backend which follows an invitation workflow:
 
@@ -40,6 +43,7 @@ class InviteOnlyBackend(object):
     permitted.    
     
     """
+    template_name = 'invite_registration/registration_form.html'
     def register(self, request, **kwargs):
         """
         A registration backend which implements the simplest possible
@@ -77,6 +81,16 @@ class InviteOnlyBackend(object):
         """
         return getattr(settings, 'REGISTRATION_OPEN', True)
 
+    def get_form_kwargs(self, request=None, form_class=None):
+        kwargs = super(InviteOnlyBackend, self).get_form_kwargs(request, form_class)
+        if (self.request.method in ('GET')) and (0!=len(self.request.GET)):
+            kwargs.update({
+                'data': self.request.GET,
+                'files': self.request.FILES,
+            })
+        return kwargs
+
+
     def get_form_class(self, request):
         """
         Return the default form class used for user registration.        
@@ -91,3 +105,6 @@ class InviteOnlyBackend(object):
 
     def post_activation_redirect(self, request, user):
         raise NotImplementedError
+
+    def get_success_url(self, request, user):
+        return reverse('auth_login')
